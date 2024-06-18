@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../data/database.dart';
-import '../util/dialog_box.dart';
-import '../util/todo_tile.dart';
+import 'package:todo/util/todo_tile.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,81 +10,90 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _myBox = Hive.box('mybox');
-  ToDoDataBase db = ToDoDataBase();
-
-  @override
-  void initState() {
-    if (_myBox.get("TODOLIST") == null) {
-      db.createInitialData();
-    } else {
-      db.loadData();
-    }
-
-    super.initState();
-  }
-
   final _controller = TextEditingController();
-
-  void checkBoxChanged(bool? value, int index) {
-    setState(() {
-      db.toDoList[index][1] = !db.toDoList[index][1];
-    });
-    db.updateDataBase();
-  }
-
-  void saveNewTask() {
-    setState(() {
-      db.toDoList.add([_controller.text, false]);
-      _controller.clear();
-    });
-    Navigator.of(context).pop();
-    db.updateDataBase();
-  }
-
-  void createNewTask() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return DialogBox(
-          controller: _controller,
-          onSave: saveNewTask,
-          onCancel: () => Navigator.of(context).pop(),
-        );
-      },
-    );
-  }
-
-  void deleteTask(int index) {
-    setState(() {
-      db.toDoList.removeAt(index);
-    });
-    db.updateDataBase();
-  }
+  final todoBox = Hive.box('todoBox');
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.red[200],
+      backgroundColor: Colors.white60,
       appBar: AppBar(
-        title: Text('TO DO'),
-        elevation: 0,
+        title: const Text('To Do'),
+        backgroundColor: Colors.black54,
+        foregroundColor: Colors.white,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: createNewTask,
-        child: Icon(Icons.add),
-      ),
-      body: ListView.builder(
-        itemCount: db.toDoList.length,
-        itemBuilder: (context, index) {
-          return ToDoTile(
-            taskName: db.toDoList[index][0],
-            taskCompleted: db.toDoList[index][1],
-            onChanged: (value) => checkBoxChanged(value, index),
-            deleteFunction: (context) => deleteTask(index),
+      body: ValueListenableBuilder(
+        valueListenable: todoBox.listenable(),
+        builder: (context, Box box, _) {
+          List todoList = box.values.toList();
+          return ListView.builder(
+            itemCount: todoList.length,
+            itemBuilder: (BuildContext context, int index) {
+              var task = todoList[index];
+              return TodoTile(
+                taskName: task['task'],
+                taskCompleted: task['completed'],
+                onChanged: (value) => _checkBoxChanged(index, value),
+                deleteFunction: (context) => _deleteTask(index),
+              );
+            },
           );
         },
       ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: TextField(
+                  controller: _controller,
+                  decoration: InputDecoration(
+                    hintText: 'Add a new todo item',
+                    filled: true,
+                    fillColor: Colors.white,
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.white),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.white),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            FloatingActionButton(
+              onPressed: _saveNewTask,
+              backgroundColor: Colors.red[200],
+              child: const Icon(Icons.add),
+            ),
+          ],
+        ),
+      ),
     );
+  }
+
+  void _checkBoxChanged(int index, bool? value) {
+    setState(() {
+      var task = todoBox.getAt(index);
+      task['completed'] = value;
+      todoBox.putAt(index, task);
+    });
+  }
+
+  void _saveNewTask() {
+    setState(() {
+      todoBox.add({'task': _controller.text, 'completed': false});
+      _controller.clear();
+    });
+  }
+
+  void _deleteTask(int index) {
+    setState(() {
+      todoBox.deleteAt(index);
+    });
   }
 }

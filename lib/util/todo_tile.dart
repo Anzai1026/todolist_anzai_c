@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
-class ToDoTile extends StatelessWidget {
+class TodoTile extends StatelessWidget {
   final String taskName;
   final bool taskCompleted;
-  Function(bool?)? onChanged;
-  Function(BuildContext)? deleteFunction;
+  final Function(bool?)? onChanged;
+  final Function(BuildContext)? deleteFunction;
 
-  ToDoTile({
-    super.key,
+  TodoTile({
     required this.taskName,
     required this.taskCompleted,
     required this.onChanged,
@@ -18,41 +17,51 @@ class ToDoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 25.0, right: 25, top: 25),
+      padding: const EdgeInsets.only(
+        top: 20,
+        left: 20,
+        right: 20,
+        bottom: 0,
+      ),
       child: Slidable(
         endActionPane: ActionPane(
-          motion: StretchMotion(),
+          motion: const StretchMotion(),
           children: [
             SlidableAction(
               onPressed: deleteFunction,
               icon: Icons.delete,
-              backgroundColor: Colors.red.shade300,
-              borderRadius: BorderRadius.circular(12),
-            )
+              backgroundColor: Colors.red,
+              borderRadius: BorderRadius.circular(15),
+            ),
           ],
         ),
         child: Container(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(15),
           ),
           child: Row(
             children: [
-              // checkbox
               Checkbox(
                 value: taskCompleted,
                 onChanged: onChanged,
-                activeColor: Colors.black,
+                checkColor: Colors.black,
+                activeColor: Colors.white,
+                side: const BorderSide(
+                  color: Colors.black,
+                ),
               ),
-
-              // task name
               Text(
                 taskName,
                 style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
                   decoration: taskCompleted
                       ? TextDecoration.lineThrough
                       : TextDecoration.none,
+                  decorationColor: Colors.black,
+                  decorationThickness: 2,
                 ),
               ),
             ],
