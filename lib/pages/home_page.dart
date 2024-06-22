@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:todo/util/todo_tile.dart';
+import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -33,6 +34,7 @@ class _HomePageState extends State<HomePage> {
               return TodoTile(
                 taskName: task['task'],
                 taskCompleted: task['completed'],
+                taskDate: task['date'], // 日付フィールドを追加
                 onChanged: (value) => _checkBoxChanged(index, value),
                 deleteFunction: (context) => _deleteTask(index),
               );
@@ -67,7 +69,7 @@ class _HomePageState extends State<HomePage> {
             ),
             FloatingActionButton(
               onPressed: _saveNewTask,
-              backgroundColor: Colors.red[200],
+              backgroundColor: Colors.red[100],
               child: const Icon(Icons.add),
             ),
           ],
@@ -86,7 +88,14 @@ class _HomePageState extends State<HomePage> {
 
   void _saveNewTask() {
     setState(() {
-      todoBox.add({'task': _controller.text, 'completed': false});
+      DateTime now = DateTime.now();
+      String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
+
+      todoBox.add({
+        'task': _controller.text,
+        'completed': false,
+        'date': formattedDate,
+      });
       _controller.clear();
     });
   }
