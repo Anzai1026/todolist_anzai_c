@@ -4,12 +4,14 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 class TodoTile extends StatelessWidget {
   final String taskName;
   final bool taskCompleted;
+  final String taskDate;
   final Function(bool?)? onChanged;
   final Function(BuildContext)? deleteFunction;
 
   TodoTile({
     required this.taskName,
     required this.taskCompleted,
+    required this.taskDate,
     required this.onChanged,
     required this.deleteFunction,
   });
@@ -52,16 +54,30 @@ class TodoTile extends StatelessWidget {
                   color: Colors.grey,
                 ),
               ),
-              Text(
-                taskName,
-                style: TextStyle(
-                  color: taskCompleted ? Colors.grey : Colors.black,
-                  fontSize: 18,
-                  decoration: taskCompleted
-                      ? TextDecoration.lineThrough
-                      : TextDecoration.none,
-                  decorationColor: Colors.grey,
-                  decorationThickness: 2,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      taskName,
+                      style: TextStyle(
+                        color: taskCompleted ? Colors.grey : Colors.black,
+                        fontSize: 18,
+                        decoration: taskCompleted
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                        decorationColor: Colors.grey,
+                        decorationThickness: 2,
+                      ),
+                    ),
+                    Text(
+                      taskDate,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
