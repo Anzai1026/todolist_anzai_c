@@ -13,34 +13,88 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _controller = TextEditingController();
   final todoBox = Hive.box('todoBox');
+  bool _showDeletedTasks = false; // To track the state of deleted tasks view
+  List<Map> _deletedTasks = []; // To keep track of deleted tasks
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white60,
       appBar: AppBar(
-        title: const Text('To Do'),
-        backgroundColor: Colors.black54,
-        foregroundColor: Colors.white,
+        title: const Text(
+          'Workout Todo',
+        style: TextStyle(
+            fontSize: 30,fontWeight: FontWeight.bold
+        ),),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black45,
       ),
-      body: ValueListenableBuilder(
-        valueListenable: todoBox.listenable(),
-        builder: (context, Box box, _) {
-          List todoList = box.values.toList();
-          return ListView.builder(
-            itemCount: todoList.length,
-            itemBuilder: (BuildContext context, int index) {
-              var task = todoList[index];
-              return TodoTile(
-                taskName: task['task'],
-                taskCompleted: task['completed'],
-                taskDate: task['date'], // 日付フィールドを追加
-                onChanged: (value) => _checkBoxChanged(index, value),
-                deleteFunction: (context) => _deleteTask(index),
-              );
-            },
-          );
-        },
+      body: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _showDeletedTasks = false;
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: const Text(
+                      'Current Tasks',
+                  style: TextStyle(
+                    color: Colors.white
+                  ),),
+                ),
+                style: ElevatedButton.styleFrom(fixedSize: Size(200, 50),
+                  backgroundColor: Colors.blue, //押したときの色！！
+                ),
+              ),
+              const SizedBox(width: 10),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _showDeletedTasks = true;
+                    });
+                  },
+                  child: Text(
+                      'Deleted Tasks',
+                  style: TextStyle(
+                    color: Colors.white
+                  ),),
+                  style: ElevatedButton.styleFrom(fixedSize: Size(200, 50),
+                    backgroundColor: Colors.red, //押したときの色！！
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Expanded(
+            child: ValueListenableBuilder(
+              valueListenable: todoBox.listenable(),
+              builder: (context, Box box, _) {
+                List todoList = _showDeletedTasks ? _deletedTasks : box.values.toList();
+                return ListView.builder(
+                  itemCount: todoList.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    var task = todoList[index];
+                    return TodoTile(
+                      taskName: task['task'],
+                      taskCompleted: task['completed'],
+                      taskDate: task['date'],
+                      onChanged: _showDeletedTasks ? null : (value) => _checkBoxChanged(index, value),
+                      deleteFunction: _showDeletedTasks ? null : (context) => _deleteTask(index),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -56,7 +110,7 @@ class _HomePageState extends State<HomePage> {
                     filled: true,
                     fillColor: Colors.white,
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.white),
+                      borderSide: const BorderSide(color: Colors.grey),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     focusedBorder: OutlineInputBorder(
@@ -69,8 +123,9 @@ class _HomePageState extends State<HomePage> {
             ),
             FloatingActionButton(
               onPressed: _saveNewTask,
-              backgroundColor: Colors.red[100],
+              backgroundColor: Colors.blue,
               child: const Icon(Icons.add),
+              shape: CircleBorder(),
             ),
           ],
         ),
@@ -102,6 +157,8 @@ class _HomePageState extends State<HomePage> {
 
   void _deleteTask(int index) {
     setState(() {
+      var task = todoBox.getAt(index);
+      _deletedTasks.add(task);
       todoBox.deleteAt(index);
     });
   }
