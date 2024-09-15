@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:intl/intl.dart';
-import 'util/todo_tile.dart';
+import '../custom_app_bar.dart';
+import '../routes.dart';
+import '../util/todo_tile.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,83 +14,62 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _controller = TextEditingController();
   final todoBox = Hive.box('todoBox');
-  final deletedTasksBox = Hive.box('deletedTasksBox'); // 削除タスク用のボックス
+  final deletedTasksBox = Hive.box('deletedTasksBox');
   Color _selectedColor = Colors.grey; // Default color
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
-  String _selectedCategory = 'General'; // Default category
+  String _selectedCategory = 'General';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[350],
-      appBar: AppBar(
-        title: const Text(
-          'Workout Todo',
-          style: TextStyle(
-            fontSize: 35,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.black,
-        actions: [
-          IconButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/calendar'); // カレンダー画面へ遷移
-              },
-              icon: const Icon(Icons.calendar_today_outlined),
-              color: Colors.white),
-          IconButton(
-              onPressed: () {
-                // 削除タスクの履歴ページへ遷移
-                Navigator.pushNamed(context, '/deleted_tasks');
-              },
-              icon: const Icon(Icons.access_time_outlined),
-              color: Colors.white),
-        ],
-      ),
-      body: ValueListenableBuilder(
-        valueListenable: todoBox.listenable(),
-        builder: (context, Box box, _) {
-          List<Map<String, dynamic>> todoList = box.values.map((task) {
-            return Map<String, dynamic>.from(task as Map);
-          }).toList();
+      appBar: const CustomAppBar(title: 'PowerTask'),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ValueListenableBuilder(
+          valueListenable: todoBox.listenable(),
+          builder: (context, Box box, _) {
+            List<Map<String, dynamic>> todoList = box.values.map((task) {
+              return Map<String, dynamic>.from(task as Map);
+            }).toList();
 
-          return ListView.builder(
-            itemCount: todoList.length,
-            itemBuilder: (BuildContext context, int index) {
-              var task = todoList[index];
-              return Dismissible(
-                key: ValueKey(task['id'] ?? UniqueKey()), // Ensure unique key
-                background: Container(color: Colors.red, child: Icon(Icons.delete, color: Colors.white)),
-                secondaryBackground: Container(color: Colors.blue, child: Icon(Icons.edit, color: Colors.white)),
-                confirmDismiss: (direction) async {
-                  if (direction == DismissDirection.endToStart) {
-                    // Handle edit
-                    final result = await _showEditDialog(index);
-                    return result;
-                  } else if (direction == DismissDirection.startToEnd) {
-                    // Handle delete
-                    final result = await _confirmDelete(index);
-                    return result;
-                  }
-                  return false;
-                },
-                child: TodoTile(
-                  taskName: task['task'] ?? 'No task name',
-                  taskDescription: task['description'] ?? '',
-                  taskCompleted: task['completed'] ?? false,
-                  taskDate: task['date'] ?? 'No date',
-                  taskTime: task['time'] ?? 'No time',
-                  taskColor: Color(task['color'] ?? Colors.grey.value),
-                  taskCategory: task['category'] ?? 'General',
-                  onChanged: (value) => _checkBoxChanged(index, value),
-                ),
-              );
-            },
-          );
-        },
+            return ListView.builder(
+              itemCount: todoList.length,
+              itemBuilder: (BuildContext context, int index) {
+                var task = todoList[index];
+                return Dismissible(
+                  key: ValueKey(task['id'] ?? UniqueKey()), // Ensure unique key
+                  background: Container(color: Colors.red, child: Icon(Icons.delete, color: Colors.white)),
+                  secondaryBackground: Container(color: Colors.blue, child: Icon(Icons.edit, color: Colors.white)),
+                  confirmDismiss: (direction) async {
+                    if (direction == DismissDirection.endToStart) {
+                      // Handle edit
+                      final result = await _showEditDialog(index);
+                      return result;
+                    } else if (direction == DismissDirection.startToEnd) {
+                      // Handle delete
+                      final result = await _confirmDelete(index);
+                      return result;
+                    }
+                    return false;
+                  },
+                  // TodoTile の呼び出しを修正
+                  child: TodoTile(
+                    taskName: task['task'] ?? 'No task name',
+                    taskDescription: task['description'] ?? '',
+                    taskCompleted: task['completed'] ?? false,
+                    taskDate: task['date'] ?? 'No date',
+                    taskTime: task['time'] ?? 'No time',
+                    taskColor: Color(task['color'] ?? Colors.grey.value),
+                    taskCategory: task['category'] ?? 'General',
+                    onChanged: (value) => _checkBoxChanged(context, index, value), // 3つ目の引数として index を追加
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskDialog,
@@ -133,7 +113,7 @@ class _HomePageState extends State<HomePage> {
       builder: (context) => AlertDialog(
         title: const Text('Edit Task'),
         content: Column(
-          mainAxisSize: MainAxisSize.min, // Ensure the dialog content is sized to fit its children
+          mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: titleController,
@@ -176,13 +156,17 @@ class _HomePageState extends State<HomePage> {
     )) ?? false; // Ensure that the return type is bool
   }
 
-  void _checkBoxChanged(int index, bool? value) {
-    setState(() {
-      var task = todoBox.getAt(index);
-      task['completed'] = value;
-      todoBox.putAt(index, task);
-    });
+  void _checkBoxChanged(BuildContext context, int index, bool? value) {
+    final box = Hive.box('todoBox');
+    var task = box.getAt(index);
+
+    // 完了状態を更新
+    task['completed'] = value;
+
+    // Hiveのデータを更新
+    box.putAt(index, task);
   }
+
 
   Future<void> _showAddTaskDialog() async {
     final titleController = TextEditingController();
@@ -246,7 +230,7 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 Navigator.of(context).pop(_selectedColor);
               },
-              child: const Text('OK'),
+              child: const Text('Done'),
             ),
           ],
         );
@@ -254,55 +238,43 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (color != null) {
-      // 3. 日付と時間の設定
-      DateTime? pickedDate = await showDatePicker(
-        context: context,
-        initialDate: _selectedDate,
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2101),
-      );
-
-      if (pickedDate != null) {
-        setState(() {
-          _selectedDate = pickedDate;
-        });
-
-        TimeOfDay? pickedTime = await showTimePicker(
-          context: context,
-          initialTime: _selectedTime,
-        );
-
-        if (pickedTime != null) {
-          setState(() {
-            _selectedTime = pickedTime;
-          });
-
-          DateTime dateTime = DateTime(
-            _selectedDate.year,
-            _selectedDate.month,
-            _selectedDate.day,
-            _selectedTime.hour,
-            _selectedTime.minute,
-          );
-
-          String formattedDate = DateFormat('yyyy-MM-dd').format(dateTime);
-          String formattedTime = DateFormat('HH:mm').format(dateTime);
-
-          setState(() {
-            todoBox.add({
-              'task': titleController.text,
-              'description': descriptionController.text,
-              'category': categoryController.text,
-              'completed': false,
-              'date': formattedDate,
-              'time': formattedTime,
-              'color': color.value,
-            });
-            _controller.clear();
-          });
-        }
-      }
+      _selectedColor = color;
     }
+
+    // 3. 日付の選択
+    DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (selectedDate != null && selectedDate != _selectedDate) {
+      _selectedDate = selectedDate;
+    }
+
+    // 4. 時間の選択
+    TimeOfDay? selectedTime = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime,
+    );
+
+    if (selectedTime != null && selectedTime != _selectedTime) {
+      _selectedTime = selectedTime;
+    }
+
+    // Save the new task
+    final task = {
+      'task': titleController.text,
+      'description': descriptionController.text,
+      'completed': false,
+      'date': '${_selectedDate.toLocal()}'.split(' ')[0],
+      'time': '${_selectedTime.format(context)}',
+      'color': _selectedColor.value,
+      'category': categoryController.text,
+    };
+
+    todoBox.add(task);
   }
 
   Widget _buildColorOption(Color color) {
@@ -311,27 +283,22 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _selectedColor = color;
         });
-        Navigator.of(context).pop(color);
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5),
-        width: 50,
-        height: 50,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: Colors.black,
-            width: 1,
-          ),
-        ),
+        width: 40,
+        height: 40,
+        color: color,
+        child: _selectedColor == color
+            ? const Icon(Icons.check, color: Colors.white)
+            : null,
       ),
     );
   }
 
   void _deleteTask(int index) {
-    setState(() {
-      todoBox.deleteAt(index);
-    });
+    // Add to deletedTasksBox before removing
+    final task = todoBox.getAt(index);
+    deletedTasksBox.add(task);
+    todoBox.deleteAt(index);
   }
 }

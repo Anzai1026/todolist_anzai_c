@@ -1,8 +1,9 @@
+import 'package:PowerTask/pages/calendar_page.dart';
+import 'package:PowerTask/pages/deleted_tasks_page.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:workout_todo/deleted_tasks_page.dart';
-import 'home_page.dart';
-import 'calendar_page.dart'; // カレンダーページをインポート
+
+import 'main_layout.dart';// MainLayoutをインポート
 
 void main() async {
   await Hive.initFlutter();
@@ -17,11 +18,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Workout Todo',
+      title: 'TaskTrek',
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: HomePage(),
+      home: const MainLayout(),
+      debugShowCheckedModeBanner: false,
       routes: {
         '/calendar': (context) => const CalendarPage(),
         '/deleted_tasks': (context) => const DeletedTasksPage(),
