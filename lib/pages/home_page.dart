@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../custom_app_bar.dart';
-import '../routes.dart';
 import '../util/todo_tile.dart';
 
 class HomePage extends StatefulWidget {
@@ -23,8 +22,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[350],
-      appBar: const CustomAppBar(title: 'PowerTask'),
+      backgroundColor: Colors.grey,
+      appBar: CustomAppBar(title: 'PowerFocus'),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ValueListenableBuilder(
@@ -40,8 +39,32 @@ class _HomePageState extends State<HomePage> {
                 var task = todoList[index];
                 return Dismissible(
                   key: ValueKey(task['id'] ?? UniqueKey()), // Ensure unique key
-                  background: Container(color: Colors.red, child: Icon(Icons.delete, color: Colors.white)),
-                  secondaryBackground: Container(color: Colors.blue, child: Icon(Icons.edit, color: Colors.white)),
+                  background: ClipRRect(
+                    borderRadius: BorderRadius.circular(12.0), // Rounded corners
+                    child: Container(
+                      color: Colors.red,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: const Icon(Icons.delete, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                  secondaryBackground: ClipRRect(
+                    borderRadius: BorderRadius.circular(12.0), // Rounded corners
+                    child: Container(
+                      color: Colors.blue,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: const Icon(Icons.edit, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
                   confirmDismiss: (direction) async {
                     if (direction == DismissDirection.endToStart) {
                       // Handle edit
@@ -166,7 +189,6 @@ class _HomePageState extends State<HomePage> {
     // Hiveのデータを更新
     box.putAt(index, task);
   }
-
 
   Future<void> _showAddTaskDialog() async {
     final titleController = TextEditingController();

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gradient_app_bar/flutter_gradient_app_bar.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -11,37 +11,50 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GradientAppBar(
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 35,
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      flexibleSpace: Center(
+        child: Transform.translate(
+          offset: Offset(-100, 25), // Adjust vertical offset
+          child: ShaderMask(
+            shaderCallback: (bounds) {
+              return LinearGradient(
+                colors: [Colors.black, Colors.red],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ).createShader(bounds);
+            },
+            child: Text(
+              title,
+              style: GoogleFonts.rockSalt(
+                fontSize: 24, // Adjusted font size
+                fontWeight: FontWeight.bold,
+                color: Colors.white, // Color will be overridden by gradient
+              ),
+            ),
+          ),
         ),
-      ),
-      gradient: const LinearGradient(
-        colors: [Colors.black, Colors.red],
       ),
       actions: [
         IconButton(
           onPressed: () {
-            Navigator.pushNamed(context, '/calendar');
+            Navigator.of(context, rootNavigator: true).pushNamed('/calendar');
           },
           icon: const Icon(Icons.calendar_today_outlined),
-          color: Colors.white,
+          color: Colors.black,
         ),
         IconButton(
           onPressed: () {
-            Navigator.pushNamed(context, '/deleted_tasks');
+            Navigator.of(context, rootNavigator: true).pushNamed('/deleted_tasks');
           },
           icon: const Icon(Icons.access_time_outlined),
-          color: Colors.white,
+          color: Colors.black,
         ),
       ],
     );
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(70.0); // Adjust height as needed
 }

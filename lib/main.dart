@@ -1,5 +1,5 @@
-import 'package:PowerTask/pages/calendar_page.dart';
-import 'package:PowerTask/pages/deleted_tasks_page.dart';
+import 'package:Power_Focus/pages/calendar_page.dart';
+import 'package:Power_Focus/pages/deleted_tasks_page.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -18,11 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TaskTrek',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+      title: 'PowerFocus',
       home: const MainLayout(),
       debugShowCheckedModeBanner: false,
       routes: {

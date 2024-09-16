@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:intl/intl.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -86,11 +85,10 @@ class _CalendarPageState extends State<CalendarPage> {
           'Calendar View',
           style: TextStyle(
             fontSize: 20,
-            color: Colors.white,
+            color: Colors.black,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.black,
       ),
       body: Column(
         children: [

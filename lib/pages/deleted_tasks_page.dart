@@ -14,11 +14,10 @@ class DeletedTasksPage extends StatelessWidget {
           'Deleted Tasks',
           style: TextStyle(
             fontSize: 20,
-            color: Colors.white,
+            color: Colors.black,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.black,
       ),
       body: ValueListenableBuilder(
         valueListenable: deletedTasksBox.listenable(),

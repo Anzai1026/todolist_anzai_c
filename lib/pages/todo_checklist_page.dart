@@ -12,8 +12,8 @@ class TodoChecklistPage extends StatelessWidget {
     final todoBox = Hive.box('todoBox');
 
     return Scaffold(
-      backgroundColor: Colors.grey[350],
-      appBar: const CustomAppBar(title: 'Checklist'), // Using CustomAppBar
+      backgroundColor: Colors.grey,
+      appBar: const CustomAppBar(title: 'PowerFocus'), // Using CustomAppBar
       body: Padding( // Added padding for better spacing
         padding: const EdgeInsets.all(8.0),
         child: ValueListenableBuilder(
