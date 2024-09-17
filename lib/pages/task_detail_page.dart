@@ -9,7 +9,7 @@ class TaskDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(task['task'] ?? 'No task name'),
+        title: Text(task['task']),
         backgroundColor: Colors.black,
       ),
       body: Padding(

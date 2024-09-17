@@ -29,9 +29,21 @@ class _HomePageState extends State<HomePage> {
         child: ValueListenableBuilder(
           valueListenable: todoBox.listenable(),
           builder: (context, Box box, _) {
-            List<Map<String, dynamic>> todoList = box.values.map((task) {
+            // Filter out completed tasks and sort by creation date (newest first)
+            List<Map<String, dynamic>> todoList = box.values
+                .where((task) => task['completed'] == false) // Show only unchecked tasks
+                .map((task) {
               return Map<String, dynamic>.from(task as Map);
             }).toList();
+
+            // Sort tasks by creation date in descending order
+            todoList.sort((a, b) {
+              final aDate = a['createdAt'] as String?;
+              final bDate = b['createdAt'] as String?;
+              // Handle null values by defaulting to a very old date
+              return (bDate ?? '0000-01-01T00:00:00.000Z')
+                  .compareTo(aDate ?? '0000-01-01T00:00:00.000Z');
+            });
 
             return ListView.builder(
               itemCount: todoList.length,
@@ -77,7 +89,6 @@ class _HomePageState extends State<HomePage> {
                     }
                     return false;
                   },
-                  // TodoTile の呼び出しを修正
                   child: TodoTile(
                     taskName: task['task'] ?? 'No task name',
                     taskDescription: task['description'] ?? '',
@@ -86,7 +97,7 @@ class _HomePageState extends State<HomePage> {
                     taskTime: task['time'] ?? 'No time',
                     taskColor: Color(task['color'] ?? Colors.grey.value),
                     taskCategory: task['category'] ?? 'General',
-                    onChanged: (value) => _checkBoxChanged(context, index, value), // 3つ目の引数として index を追加
+                    onChanged: (value) => _checkBoxChanged(context, index, value),
                   ),
                 );
               },
@@ -164,6 +175,7 @@ class _HomePageState extends State<HomePage> {
                   'date': task['date'],
                   'time': task['time'],
                   'color': task['color'],
+                  'createdAt': task['createdAt'], // Ensure creation date is preserved
                 });
               });
               Navigator.of(context).pop(true);
@@ -183,10 +195,10 @@ class _HomePageState extends State<HomePage> {
     final box = Hive.box('todoBox');
     var task = box.getAt(index);
 
-    // 完了状態を更新
+    // Update completion status
     task['completed'] = value;
 
-    // Hiveのデータを更新
+    // Update Hive data
     box.putAt(index, task);
   }
 
@@ -195,7 +207,7 @@ class _HomePageState extends State<HomePage> {
     final descriptionController = TextEditingController();
     final categoryController = TextEditingController();
 
-    // 1. タイトル、詳細、ジャンルの入力
+    // 1. Title, description, and category input
     await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -230,7 +242,7 @@ class _HomePageState extends State<HomePage> {
       },
     );
 
-    // 2. 色の選択
+    // 2. Color selection
     Color? color = await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -263,7 +275,7 @@ class _HomePageState extends State<HomePage> {
       _selectedColor = color;
     }
 
-    // 3. 日付の選択
+    // 3. Date selection
     DateTime? selectedDate = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
@@ -275,7 +287,7 @@ class _HomePageState extends State<HomePage> {
       _selectedDate = selectedDate;
     }
 
-    // 4. 時間の選択
+    // 4. Time selection
     TimeOfDay? selectedTime = await showTimePicker(
       context: context,
       initialTime: _selectedTime,
@@ -294,6 +306,7 @@ class _HomePageState extends State<HomePage> {
       'time': '${_selectedTime.format(context)}',
       'color': _selectedColor.value,
       'category': categoryController.text,
+      'createdAt': DateTime.now().toIso8601String(), // Add creation date
     };
 
     todoBox.add(task);
@@ -317,10 +330,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _deleteTask(int index) {
-    // Add to deletedTasksBox before removing
+  Future<void> _deleteTask(int index) async {
     final task = todoBox.getAt(index);
-    deletedTasksBox.add(task);
+    await deletedTasksBox.add(task);
     todoBox.deleteAt(index);
   }
 }
