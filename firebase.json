@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"ios":{"default":{"projectId":"powerfocus","appId":"1:621775484603:ios:f6e20e92da601633615b9e","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"powerfocus","configurations":{"ios":"1:621775484603:ios:f6e20e92da601633615b9e"}}}}}}

@@ -1,8 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
+
+  void signUserOut() {
+    FirebaseAuth.instance.signOut();
+  }
 
   const CustomAppBar({
     required this.title,
@@ -49,6 +54,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             Navigator.of(context, rootNavigator: true).pushNamed('/deleted_tasks');
           },
           icon: const Icon(Icons.access_time_outlined),
+          color: Colors.black,
+        ),
+        IconButton(
+          onPressed: signUserOut, icon: Icon(Icons.exit_to_app),
           color: Colors.black,
         ),
       ],
