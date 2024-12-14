@@ -1,4 +1,4 @@
-# Power Task
+# Power Task https://github.com/Anzai1026/todolist_anzai_c/issues/1#issue-2739633222
 
 A new Flutter project.
 
